@@ -15,6 +15,11 @@ namespace MoqDemo
 
         public Claim Calculate(Claim c, int participantId)
         {
+            if (!ValidateClaim(c))
+            {
+                return c;
+            }
+
             var coverages = _planGetter.GetCoverages(participantId);
             if (!coverages.Any())
             {
@@ -25,7 +30,7 @@ namespace MoqDemo
             var claimInCoverage = false;
             foreach (var coverage in coverages)
             {
-                if (coverage.EffectiveDate <= c.ServiceStartDate && coverage.EffectiveDate >= c.ServiceEndDate)
+                if (coverage.EffectiveDate <= c.ServiceStartDate) //&& coverage.EffectiveDate <= c.ServiceEndDate)
                 {
                     claimInCoverage = true;
                 }
@@ -35,8 +40,24 @@ namespace MoqDemo
             {
                 c.Log.Add("No Coverage (Outside Date Range)");
             }
+            else
+            {
+                 c.Log.Add("Coverage Found");
+            }
 
             return c;
+        }
+
+        private bool ValidateClaim(Claim claim)
+        {
+            if (!(claim.ServiceStartDate <= claim.ServiceEndDate))
+            {
+                claim.Log.Add("Claim Error: Service Date Not Valid");
+                return false;
+            }
+
+            return true;
+
         }
     }
 

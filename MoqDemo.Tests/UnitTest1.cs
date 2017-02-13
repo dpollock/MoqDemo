@@ -10,25 +10,26 @@ namespace MoqDemo.Tests
     public class ClaimCalculatorTests
     {
         private ClaimCalculator calc;
-        private ClaimCalculator calc2;
         private Claim fakeClaim;
-        // private Mock<IPlanGetter> mock;
+        private Mock<IPlanGetter> mockPlanGetter;
 
         [TestInitialize]
         public void Setup()
         {
-            //    mock = new Mock<IPlanGetter>();
             fakeClaim = CreateFakeClaim();
 
-            calc = new ClaimCalculator(new FakePlanGetter());
-            calc2 = new ClaimCalculator(new FakePlanGetter2());
+            mockPlanGetter = new Mock<IPlanGetter>();
+
+            calc = new ClaimCalculator(mockPlanGetter.Object);
         }
 
         [TestMethod]
         public void CalculateReturnsSameClaim()
         {
             //Arrange
-
+            mockPlanGetter
+                .Setup(x => x.GetCoverages(It.IsAny<int>()))
+                .Returns(new List<Coverage>());
             //Act
             var result = calc.Calculate(fakeClaim, participantId: 10);
 
@@ -40,6 +41,9 @@ namespace MoqDemo.Tests
         public void Calculate_NoCoverage_ExpectNoChange_IsLogged()
         {
             //Arrange
+            mockPlanGetter
+                .Setup(x => x.GetCoverages(It.IsAny<int>()))
+                .Returns(new List<Coverage>());
 
             //Act
             var result = calc.Calculate(fakeClaim, participantId: 10);
@@ -53,41 +57,66 @@ namespace MoqDemo.Tests
         public void Calculate_1Coverage_OutSideDateRange()
         {
             //Arrange
-            
+            var r = new List<Coverage> { new Coverage() { CoverageID = 1, ParticipantID = 5, EffectiveDate = DateTime.Parse("1/1/2018") } };
+            mockPlanGetter
+                .Setup(x => x.GetCoverages(It.IsAny<int>()))
+                .Returns(r);
 
             //Act
-            var result = calc2.Calculate(fakeClaim, participantId: 10);
+            var result = calc.Calculate(fakeClaim, participantId: 10);
 
             //Assert
             Assert.AreEqual(1, result.Log.Count);
             Assert.AreEqual("No Coverage (Outside Date Range)", result.Log.First());
         }
 
+        [TestMethod]
+        public void Calculate_1Coverage_InsideDateRange()
+        {
+            //Arrange
+            var r = new List<Coverage> { new Coverage() { CoverageID = 1, ParticipantID = 5, EffectiveDate = DateTime.Parse("1/1/2017") } };
+            mockPlanGetter
+                .Setup(x => x.GetCoverages(It.IsAny<int>()))
+                .Returns(r);
+
+            //Act
+            var result = calc.Calculate(fakeClaim, participantId: 10);
+
+            //Assert
+            Assert.AreEqual(1, result.Log.Count);
+            Assert.AreEqual("Coverage Found", result.Log.First());
+        }
+
+
+         [TestMethod]
+        public void Calculate_MessedUpServiceDates()
+        {
+            //Arrange
+            var r = new List<Coverage> { new Coverage() { CoverageID = 1, ParticipantID = 5, EffectiveDate = DateTime.Parse("1/1/2017") } };
+            mockPlanGetter
+                .Setup(x => x.GetCoverages(It.IsAny<int>()))
+                .Returns(r);
+
+            fakeClaim.ServiceStartDate = DateTime.Parse("3/1/2017");
+            fakeClaim.ServiceEndDate = DateTime.Parse("2/1/2017");
+            //Act
+            var result = calc.Calculate(fakeClaim, participantId: 10);
+
+            //Assert
+            Assert.AreEqual(1, result.Log.Count);
+            Assert.AreEqual("Claim Error: Service Date Not Valid", result.Log.First());
+        }
+
+
         private static Claim CreateFakeClaim()
         {
-            Claim c = new Claim() {Id = 5};
+            Claim c = new Claim() { Id = 5 };
+            c.ServiceStartDate = DateTime.Parse("2/1/2017");
+            c.ServiceEndDate = DateTime.Parse("2/1/2017");
             return c;
         }
     }
 
 
-    public class FakePlanGetter : IPlanGetter
-    {
-        public List<Coverage> GetCoverages(int participantId)
-        {
-            var r = new List<Coverage>();
-            return r;
-        }
-    }
 
-    public class FakePlanGetter2 : IPlanGetter
-    {
-        public List<Coverage> GetCoverages(int participantId)
-        {
-            var r = new List<Coverage>();
-            r.Add(new Coverage() { CoverageID = 1, ParticipantID = 5, EffectiveDate = DateTime.Parse("1/1/2018") });
-
-            return r;
-        }
-    }
 }
