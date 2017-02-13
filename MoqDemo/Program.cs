@@ -12,4 +12,8 @@ namespace MoqDemo
         {
         }
     }
+
+    //part id, list of claims
+    //get coverage and plan details for a aparticipant
+    //get claim history
 }
