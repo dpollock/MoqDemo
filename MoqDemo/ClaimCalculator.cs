@@ -7,15 +7,17 @@ namespace MoqDemo
     public class ClaimCalculator
     {
         private readonly IPlanGetter _planGetter;
+        private readonly IClaimValidator _claimValidator;
 
-        public ClaimCalculator(IPlanGetter planGetter)
+        public ClaimCalculator(IPlanGetter planGetter, IClaimValidator claimValidator)
         {
             _planGetter = planGetter;
+            _claimValidator = claimValidator;
         }
 
         public Claim Calculate(Claim c, int participantId)
         {
-            if (!ValidateClaim(c))
+            if (!_claimValidator.ValidateClaim(c))
             {
                 return c;
             }
@@ -42,23 +44,13 @@ namespace MoqDemo
             }
             else
             {
-                 c.Log.Add("Coverage Found");
+                c.Log.Add("Coverage Found");
             }
 
             return c;
         }
 
-        private bool ValidateClaim(Claim claim)
-        {
-            if (!(claim.ServiceStartDate <= claim.ServiceEndDate))
-            {
-                claim.Log.Add("Claim Error: Service Date Not Valid");
-                return false;
-            }
 
-            return true;
-
-        }
     }
 
     public class Claim

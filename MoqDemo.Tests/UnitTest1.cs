@@ -20,7 +20,7 @@ namespace MoqDemo.Tests
 
             mockPlanGetter = new Mock<IPlanGetter>();
 
-            calc = new ClaimCalculator(mockPlanGetter.Object);
+            calc = new ClaimCalculator(mockPlanGetter.Object, new ClaimValidator());
         }
 
         [TestMethod]
@@ -88,24 +88,7 @@ namespace MoqDemo.Tests
         }
 
 
-         [TestMethod]
-        public void Calculate_MessedUpServiceDates()
-        {
-            //Arrange
-            var r = new List<Coverage> { new Coverage() { CoverageID = 1, ParticipantID = 5, EffectiveDate = DateTime.Parse("1/1/2017") } };
-            mockPlanGetter
-                .Setup(x => x.GetCoverages(It.IsAny<int>()))
-                .Returns(r);
-
-            fakeClaim.ServiceStartDate = DateTime.Parse("3/1/2017");
-            fakeClaim.ServiceEndDate = DateTime.Parse("2/1/2017");
-            //Act
-            var result = calc.Calculate(fakeClaim, participantId: 10);
-
-            //Assert
-            Assert.AreEqual(1, result.Log.Count);
-            Assert.AreEqual("Claim Error: Service Date Not Valid", result.Log.First());
-        }
+       
 
 
         private static Claim CreateFakeClaim()

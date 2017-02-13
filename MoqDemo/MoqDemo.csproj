@@ -44,7 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClaimCalculator.cs" />
+    <Compile Include="ClaimValidator.cs" />
     <Compile Include="Coverage.cs" />
+    <Compile Include="IClaimValidator.cs" />
     <Compile Include="IPlanGetter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
