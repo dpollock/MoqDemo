@@ -10,7 +10,7 @@ namespace MoqDemo.Tests
     public class ClaimCalculatorTests
     {
         private ClaimCalculator calc;
-        private Claim fakeClaim;
+        private ClaimInput fakeClaim;
         private Mock<IPlanGetter> mockPlanGetter;
 
         [TestInitialize]
@@ -30,11 +30,32 @@ namespace MoqDemo.Tests
             mockPlanGetter
                 .Setup(x => x.GetCoverages(It.IsAny<int>()))
                 .Returns(new List<Coverage>());
+
+            
             //Act
             var result = calc.Calculate(fakeClaim, participantId: 10);
 
             //Assert
-            Assert.AreEqual(5, result.Id);
+            mockPlanGetter.Verify(x => x.GetCoverages(6), Times.Never());
+            Assert.AreEqual(5, result.ClaimId);
+        }
+
+
+        
+        [TestMethod]
+        public void CalculateCalls_GetCoverages()
+        {
+            //Arrange
+            mockPlanGetter
+                .Setup(x => x.GetCoverages(It.IsAny<int>()))
+                .Returns(new List<Coverage>());
+
+            
+            //Act
+            var result = calc.Calculate(fakeClaim, participantId: 10);
+
+            //Assert
+            mockPlanGetter.Verify(x => x.GetCoverages(It.IsAny<int>()), Times.Exactly(1));
         }
 
         [TestMethod]
@@ -86,14 +107,12 @@ namespace MoqDemo.Tests
             Assert.AreEqual(1, result.Log.Count);
             Assert.AreEqual("Coverage Found", result.Log.First());
         }
-
-
        
 
 
-        private static Claim CreateFakeClaim()
+        private static ClaimInput CreateFakeClaim()
         {
-            Claim c = new Claim() { Id = 5 };
+            ClaimInput c = new ClaimInput() { Id = 5 };
             c.ServiceStartDate = DateTime.Parse("2/1/2017");
             c.ServiceEndDate = DateTime.Parse("2/1/2017");
             return c;

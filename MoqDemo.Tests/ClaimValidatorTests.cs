@@ -14,7 +14,7 @@ namespace MoqDemo.Tests
         {
             //Arrange
             IClaimValidator validator = new ClaimValidator();
-            Claim c = new Claim
+            ClaimInput c = new ClaimInput
             {
                 Id = 5,
                 ServiceStartDate = DateTime.Parse("2/1/2017"),
@@ -25,9 +25,8 @@ namespace MoqDemo.Tests
             var result = validator.ValidateClaim(c);
 
             //Assert
-            Assert.IsFalse(result);
-            Assert.AreEqual(1, c.Log.Count);
-            Assert.AreEqual("Claim Error: Service Date Not Valid", c.Log.First());
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Claim Error: Service Date Not Valid", result.First());
         }
     }
 }

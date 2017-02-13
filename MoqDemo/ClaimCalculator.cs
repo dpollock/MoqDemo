@@ -15,18 +15,22 @@ namespace MoqDemo
             _claimValidator = claimValidator;
         }
 
-        public Claim Calculate(Claim c, int participantId)
+        public ClaimOutput Calculate(ClaimInput c, int participantId)
         {
-            if (!_claimValidator.ValidateClaim(c))
+            var output = new ClaimOutput() { ClaimId = c.Id, Log = new List<string>() };
+
+            var validateResults = _claimValidator.ValidateClaim(c);
+            if (validateResults.Any())
             {
-                return c;
+                output.Log = validateResults;
+                return output;
             }
 
             var coverages = _planGetter.GetCoverages(participantId);
             if (!coverages.Any())
             {
-                c.Log.Add("No Coverage");
-                return c;
+                output.Log.Add("No Coverage");
+                return output;
             }
 
             var claimInCoverage = false;
@@ -40,25 +44,33 @@ namespace MoqDemo
 
             if (claimInCoverage == false)
             {
-                c.Log.Add("No Coverage (Outside Date Range)");
+                output.Log.Add("No Coverage (Outside Date Range)");
             }
             else
             {
-                c.Log.Add("Coverage Found");
+                output.Log.Add("Coverage Found");
             }
 
-            return c;
+            return output;
         }
 
 
     }
 
-    public class Claim
+
+    public class ClaimOutput
+    {
+        public long ClaimId { get; set; }
+        public List<string> Log { get; set; } = new List<string>();
+
+    }
+
+    public class ClaimInput
     {
         public long Id { get; set; }
-        public List<string> Log { get; set; } = new List<string>();
 
         public DateTime ServiceStartDate { get; set; }
         public DateTime ServiceEndDate { get; set; }
+        public decimal ApprovedAmount { get; set; }
     }
 }

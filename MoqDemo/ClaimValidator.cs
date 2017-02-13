@@ -1,16 +1,18 @@
-﻿namespace MoqDemo
+﻿using System.Collections.Generic;
+
+namespace MoqDemo
 {
     public class ClaimValidator : IClaimValidator
     {
-        public bool ValidateClaim(Claim claim)
+        public List<string> ValidateClaim(ClaimInput claim)
         {
+            var result = new List<string>();
             if (!(claim.ServiceStartDate <= claim.ServiceEndDate))
             {
-                claim.Log.Add("Claim Error: Service Date Not Valid");
-                return false;
+                result.Add("Claim Error: Service Date Not Valid");
             }
 
-            return true;
+            return result;
 
         }
     }

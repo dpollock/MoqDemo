@@ -1,7 +1,9 @@
-﻿namespace MoqDemo
+﻿using System.Collections.Generic;
+
+namespace MoqDemo
 {
     public interface IClaimValidator
     {
-        bool ValidateClaim(Claim claim);
+        List<string>  ValidateClaim(ClaimInput claim);
     }
 }
